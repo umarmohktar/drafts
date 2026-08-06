@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Watching the USN Journal Work on a Live System — draft for Richard Davis</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfbfa; --surface:#fff; --ink:#1a1a18; --muted:#6b6b66; --line:#e4e4e0;
+  --accent:#8a5a2b; --accent-soft:#f5efe7;
+  --measure:34rem;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;--line:#2c2c29;
+        --accent:#d9a66b;--accent-soft:#241d14}
+}
+:root[data-theme="dark"]{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;
+        --line:#2c2c29;--accent:#d9a66b;--accent-soft:#241d14}
+:root[data-theme="light"]{--bg:#fbfbfa;--surface:#fff;--ink:#1a1a18;--muted:#6b6b66;
+        --line:#e4e4e0;--accent:#8a5a2b;--accent-soft:#f5efe7}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 1.0625rem/1.7 ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+  padding:0 1.25rem 5rem}
+.wrap{max-width:var(--measure);margin:0 auto}
+.banner{max-width:var(--measure);margin:0 auto;background:var(--accent-soft);
+  border:1px solid var(--line);border-radius:10px;padding:.85rem 1rem;
+  margin-top:2rem;font:600 .8125rem/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.005em;color:var(--ink)}
+.banner span{display:block;font-weight:400;color:var(--muted);margin-top:.25rem}
+h1{font-size:clamp(1.85rem,1.3rem + 2.2vw,2.6rem);line-height:1.16;letter-spacing:-.021em;
+  margin:2.25rem 0 .6rem;font-weight:600}
+h2{font-size:1.3rem;line-height:1.3;letter-spacing:-.012em;margin:2.6rem 0 .7rem;font-weight:600}
+p{margin:0 0 1.35rem}
+.meta{font:400 .8125rem/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--muted);margin:0 0 2rem;padding-bottom:1.4rem;border-bottom:1px solid var(--line)}
+.meta b{font-weight:600;color:var(--ink)}
+code{font:400 .9em/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--accent-soft);border:1px solid var(--line);border-radius:4px;padding:.1em .34em}
+footer{max-width:var(--measure);margin:3.5rem auto 0;padding-top:1.5rem;
+  border-top:1px solid var(--line);
+  font:400 .8125rem/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--muted)}
+.tools{display:flex;gap:.6rem;flex-wrap:wrap;margin:0 0 1.25rem}
+button{font:600 .8125rem/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:.6rem .85rem;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="banner">Unpublished draft prepared for Richard Davis
+<span>Not published anywhere and not indexed. Written from your own video, in your own words —
+yours to edit, publish or bin. No credit and no payment needed.</span></div>
+<main class="wrap">
+<h1>Watching the USN Journal Work on a Live System</h1>
+<p class="meta">Drafted from your video &middot; ~883 words &middot; drafted 2026-08-01</p>
+<div class="tools">
+  <button data-copy="md">Copy as Markdown</button>
+</div>
+<p>---</p>
+<h1>Watching the USN Journal Work on a Live System</h1>
+<p>We usually treat the USN Journal as a dead artifact. We pull it out of an image, we parse it, and we read about things that already happened. But you can also query the journal on a live and running system — no extraction, no parsing — and watch it record file system activity as you cause it: a create, a rename, a delete, each one sitting right there in the journal moments after you do it.</p>
+<p>Now remember, NTFS gives us two file system journals: $LogFile and $UsnJrnl — or more accurately $J, since $J is an alternate data stream of $UsnJrnl. $J is what we would typically extract with a tool like FTK Imager or KAPE, and then parse with a tool like Eric Zimmerman's MFTECmd. That's the workflow most people know, and I've covered both journals in depth before, including how to extract and parse them. This is a different look: querying the journal directly on the live system.</p>
+<h2>Create a file, then predict the journal</h2>
+<p>Open an administrative command prompt. To create a file, I like to use copy con — con as in console — an old-school method that dates back to the MS-DOS days but still works fine in modern Windows:</p>
+<p>``<code>
+copy con testfile
+</code>``</p>
+<p>Press Enter and you get a blank line. Type something like "hello world", then press F6 (or Ctrl+Z) and Enter, and Windows reports that one file was copied. A quick <code>dir testfile</code> confirms it's there.</p>
+<p>Before touching the journal, think about what we'd expect it to contain for this file. We created a file, so there should be a file create. We added data to it, so that gets logged as a data extend. And then we closed the handle. That's our prediction — now let's test it.</p>
+<h2>The commonly documented method, and why it falls short</h2>
+<p>Here's one method I often see documented for querying the USN Journal on a live system:</p>
+<p>``<code>
+fsutil usn readdata testfile
+</code>``</p>
+<p>This does produce information — but notice the timestamp. It's listed as 12:00 AM on 1/1/1601. That's the NTFS epoch, the beginning of time from the perspective of Windows NTFS. Clearly not the actual time anything happened to this file.</p>
+<p>We do get a file reference number, or FRN. Remember that the FRN is an 8-byte value: a combination of the MFT entry number, which is 6 bytes, and the MFT sequence number, which is 2 bytes. We also get the parent FRN and the update sequence number. But the reason field just reads 0x0. There's no file create in sight. This doesn't seem to be what we're looking for, and that's because it's not. We need different parameters.</p>
+<h2>readjournal is what you actually want</h2>
+<p>``<code>
+fsutil usn readjournal c: csv
+</code>``</p>
+<p>That's the drive letter the journal lives on, and csv tells fsutil we want CSV output. One warning: run it exactly like that and it dumps the entire journal to standard output. That's a huge amount of data flying past, and none of it is helpful at that speed. Ctrl+C to abort, then run it again with a filter. We're not in WSL, so there's no grep here — use findstr instead:</p>
+<p>``<code>
+fsutil usn readjournal c: csv | findstr /i testfile
+</code>``</p>
+<p>The /i makes the match case-insensitive. I do that out of habit.</p>
+<p>Now we get something back that looks like what we predicted: a file create, then a data extend alongside the file create, and finally data extend, file create, and close together. Exactly the three operations we expected — and this time with a timestamp that looks reasonable.</p>
+<p>One thing to keep in mind about that timestamp: it's displayed in whatever time zone the local machine is configured for, even though behind the scenes the journal stores it in UTC. So don't let the local time display throw you.</p>
+<h2>Following the file through a rename and a delete</h2>
+<p>Before moving on, copy the FRN out of that output — we're about to need it.</p>
+<p>Now let's generate some more noise in the journal. Rename testfile to testfile2, then delete testfile2. Here's the catch when we go looking for that activity: the file carried two different names over its life, and testfile2 was only the last of them. So instead of searching the journal for a filename, search it for the FRN. That should show us everything.</p>
+<p>Reading the results top to bottom: our file create; the data extend with file create; the data extend, file create, and close. All of that is the history we already saw. But then comes a rename old name entry for testfile, a rename new name entry for testfile2, a rename new name with close — and finally a file delete with close, where we deleted the newly renamed testfile2.</p>
+<p>That's the entire life of the file, from creation to deletion, exactly as we just lived it on the file system — and you can see it live, on a running machine, with nothing but fsutil.</p>
+<p>Pretty cool, right? It's one thing to hear about how something should work. But it's an entirely different thing when you get to actually see it live and in action.</p>
+</main>
+<footer>
+<p>Prepared by Umar &middot; Proof Sheet &middot; <a href="mailto:umar@proofsheetstudio.com"
+   style="color:var(--accent)">umar@proofsheetstudio.com</a></p>
+<p>Every word here comes from your own video. Nothing was invented, and nothing has been
+published anywhere.</p>
+</footer>
+<script type="text/plain" id="md">Title: Watching the USN Journal Work on a Live System
+Source video folder: samples/13cubed
+Drafted: 2026-08-01
+
+---
+
+# Watching the USN Journal Work on a Live System
+
+We usually treat the USN Journal as a dead artifact. We pull it out of an image, we parse it, and we read about things that already happened. But you can also query the journal on a live and running system — no extraction, no parsing — and watch it record file system activity as you cause it: a create, a rename, a delete, each one sitting right there in the journal moments after you do it.
+
+Now remember, NTFS gives us two file system journals: $LogFile and $UsnJrnl — or more accurately $J, since $J is an alternate data stream of $UsnJrnl. $J is what we would typically extract with a tool like FTK Imager or KAPE, and then parse with a tool like Eric Zimmerman&#x27;s MFTECmd. That&#x27;s the workflow most people know, and I&#x27;ve covered both journals in depth before, including how to extract and parse them. This is a different look: querying the journal directly on the live system.
+
+## Create a file, then predict the journal
+
+Open an administrative command prompt. To create a file, I like to use copy con — con as in console — an old-school method that dates back to the MS-DOS days but still works fine in modern Windows:
+
+```
+copy con testfile
+```
+
+Press Enter and you get a blank line. Type something like &quot;hello world&quot;, then press F6 (or Ctrl+Z) and Enter, and Windows reports that one file was copied. A quick `dir testfile` confirms it&#x27;s there.
+
+Before touching the journal, think about what we&#x27;d expect it to contain for this file. We created a file, so there should be a file create. We added data to it, so that gets logged as a data extend. And then we closed the handle. That&#x27;s our prediction — now let&#x27;s test it.
+
+## The commonly documented method, and why it falls short
+
+Here&#x27;s one method I often see documented for querying the USN Journal on a live system:
+
+```
+fsutil usn readdata testfile
+```
+
+This does produce information — but notice the timestamp. It&#x27;s listed as 12:00 AM on 1/1/1601. That&#x27;s the NTFS epoch, the beginning of time from the perspective of Windows NTFS. Clearly not the actual time anything happened to this file.
+
+We do get a file reference number, or FRN. Remember that the FRN is an 8-byte value: a combination of the MFT entry number, which is 6 bytes, and the MFT sequence number, which is 2 bytes. We also get the parent FRN and the update sequence number. But the reason field just reads 0x0. There&#x27;s no file create in sight. This doesn&#x27;t seem to be what we&#x27;re looking for, and that&#x27;s because it&#x27;s not. We need different parameters.
+
+## readjournal is what you actually want
+
+```
+fsutil usn readjournal c: csv
+```
+
+That&#x27;s the drive letter the journal lives on, and csv tells fsutil we want CSV output. One warning: run it exactly like that and it dumps the entire journal to standard output. That&#x27;s a huge amount of data flying past, and none of it is helpful at that speed. Ctrl+C to abort, then run it again with a filter. We&#x27;re not in WSL, so there&#x27;s no grep here — use findstr instead:
+
+```
+fsutil usn readjournal c: csv | findstr /i testfile
+```
+
+The /i makes the match case-insensitive. I do that out of habit.
+
+Now we get something back that looks like what we predicted: a file create, then a data extend alongside the file create, and finally data extend, file create, and close together. Exactly the three operations we expected — and this time with a timestamp that looks reasonable.
+
+One thing to keep in mind about that timestamp: it&#x27;s displayed in whatever time zone the local machine is configured for, even though behind the scenes the journal stores it in UTC. So don&#x27;t let the local time display throw you.
+
+## Following the file through a rename and a delete
+
+Before moving on, copy the FRN out of that output — we&#x27;re about to need it.
+
+Now let&#x27;s generate some more noise in the journal. Rename testfile to testfile2, then delete testfile2. Here&#x27;s the catch when we go looking for that activity: the file carried two different names over its life, and testfile2 was only the last of them. So instead of searching the journal for a filename, search it for the FRN. That should show us everything.
+
+Reading the results top to bottom: our file create; the data extend with file create; the data extend, file create, and close. All of that is the history we already saw. But then comes a rename old name entry for testfile, a rename new name entry for testfile2, a rename new name with close — and finally a file delete with close, where we deleted the newly renamed testfile2.
+
+That&#x27;s the entire life of the file, from creation to deletion, exactly as we just lived it on the file system — and you can see it live, on a running machine, with nothing but fsutil.
+
+Pretty cool, right? It&#x27;s one thing to hear about how something should work. But it&#x27;s an entirely different thing when you get to actually see it live and in action.
+</script>
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var src = document.getElementById(b.getAttribute('data-copy')).textContent;
+    navigator.clipboard.writeText(src).then(function(){
+      var t = b.textContent; b.textContent = 'Copied';
+      setTimeout(function(){ b.textContent = t; }, 1600);
+    });
+  });
+});
+</script>
+</body>
+</html>
