@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Stop Asking If Your Design Looks Good — draft for Thomas Cargill</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfbfa; --surface:#fff; --ink:#1a1a18; --muted:#6b6b66; --line:#e4e4e0;
+  --accent:#8a5a2b; --accent-soft:#f5efe7;
+  --measure:34rem;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;--line:#2c2c29;
+        --accent:#d9a66b;--accent-soft:#241d14}
+}
+:root[data-theme="dark"]{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;
+        --line:#2c2c29;--accent:#d9a66b;--accent-soft:#241d14}
+:root[data-theme="light"]{--bg:#fbfbfa;--surface:#fff;--ink:#1a1a18;--muted:#6b6b66;
+        --line:#e4e4e0;--accent:#8a5a2b;--accent-soft:#f5efe7}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 1.0625rem/1.7 ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+  padding:0 1.25rem 5rem}
+.wrap{max-width:var(--measure);margin:0 auto}
+.banner{max-width:var(--measure);margin:0 auto;background:var(--accent-soft);
+  border:1px solid var(--line);border-radius:10px;padding:.85rem 1rem;
+  margin-top:2rem;font:600 .8125rem/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.005em;color:var(--ink)}
+.banner span{display:block;font-weight:400;color:var(--muted);margin-top:.25rem}
+h1{font-size:clamp(1.85rem,1.3rem + 2.2vw,2.6rem);line-height:1.16;letter-spacing:-.021em;
+  margin:2.25rem 0 .6rem;font-weight:600}
+h2{font-size:1.3rem;line-height:1.3;letter-spacing:-.012em;margin:2.6rem 0 .7rem;font-weight:600}
+p{margin:0 0 1.35rem}
+.meta{font:400 .8125rem/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--muted);margin:0 0 2rem;padding-bottom:1.4rem;border-bottom:1px solid var(--line)}
+.meta b{font-weight:600;color:var(--ink)}
+code{font:400 .9em/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--accent-soft);border:1px solid var(--line);border-radius:4px;padding:.1em .34em}
+footer{max-width:var(--measure);margin:3.5rem auto 0;padding-top:1.5rem;
+  border-top:1px solid var(--line);
+  font:400 .8125rem/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--muted)}
+.tools{display:flex;gap:.6rem;flex-wrap:wrap;margin:0 0 1.25rem}
+button{font:600 .8125rem/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:.6rem .85rem;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="banner">Unpublished draft prepared for Thomas Cargill
+<span>Not published anywhere and not indexed. Written from your own video, in your own words —
+yours to edit, publish or bin. No credit and no payment needed.</span></div>
+<main class="wrap">
+<h1>Stop Asking If Your Design Looks Good</h1>
+<p class="meta">Drafted from your video &middot; ~1,303 words</p>
+<div class="tools">
+  <button data-copy="md">Copy as Markdown</button>
+</div>
+<p>Drafted 2026-08-01</p>
+<p>Every time you look at a design, maybe even your own design, stop asking yourself if it looks good. It's the easiest question in the world to ask, and it does nothing for you.</p>
+<p>Instead, ask yourself three things. What is this trying to make me feel? What is it trying to make me do? And what decisions have been made to get me there? If you can answer those quickly, without overthinking it, your design eye is for sure improving, because that's really what training your eye is all about. Recognising intention first. Seeing why something works, or more importantly perhaps, why it doesn't.</p>
+<h2>What that looks like on a real design</h2>
+<p>Here's what I mean. I broke down a design for a Mediterranean villa brand, and at first glance it just looks clean. Maybe calm, minimal, quite nice actually. But once you slow down and start looking at the human decisions, you realise this isn't random at all.</p>
+<p>Take the image first. The boat is placed almost centrally, which gives it stability and makes it a focal point. But it's not static. It's moving away from us slightly towards the upper left. That direction matters more than people realise, because it creates a sense of progression, of leaving, which ties directly into the idea of silence and escape the brand is hinting at. If the boat was coming towards us, or just sitting still, the entire feeling changes completely.</p>
+<p>Then the lighting. It's not harsh, not overly dramatic either. It's soft, golden, kind of nostalgic, and it's doing a lot of emotional work without saying anything at all. It leans into that idealised Mediterranean feeling, the warmth, the calmness, the stillness. It's not just a nice photo. It's a very specific atmosphere being chosen and pushed onto you as the viewer.</p>
+<p>The typography is restrained. Nothing shouts at you. The script layered over the serif adds a human touch, kind of like a signature breaking the rules, and the spacing across the words "light, silence and sea" is so deliberate it could only have come from a designer's brain.</p>
+<p>Step back and this isn't just a nice layout. It's a collection of small, very intentional decisions that all point in the same direction. That's exactly what design thinking looks like in practice. It's also the part AI struggles with right now, because it's about choosing what should feel right, and why. AI can design parts of this, for sure, but only if a designer with knowledge is controlling it in the first place.</p>
+<h2>Design to get a result, not a compliment</h2>
+<p>Here's something that takes most designers a long time to unlearn: designing to impress.</p>
+<p>Beginners usually design for approval alone. They try to impress their client with skill or a Photoshop effect. They want the client or the boss to say wow, and they chase aesthetic praise like "that looks amazing" or "I love the colour choice here". The truth is, none of that means a design is actually working.</p>
+<p>Experts don't make being admired the priority. They design to get a result. The focus shifts from pleasing people to guiding actions. Do the majority of users click here? Did they read this? Did they buy? Did they remember? That's the shift that really, really matters. If a client says "yeah, this looks okay" but the campaign gets 40% more conversions, that's a win, because as a designer your job is to make things actually happen.</p>
+<p>Before you even open your software, ask what success actually looks like. More sign-ups? More product sales? Higher time spent on a landing page? Define that goal first, then design backwards from it.</p>
+<p>You might say, well, my client doesn't actually care about that, they just want things to look a certain way. Okay. That client is likely low tier in the business world, and they likely pay you very little for your time. Part of the designer's role in the real world is to demonstrate and persuade a client why your design choices work, and how they benefit them.</p>
+<h2>Speak to somebody, not everybody</h2>
+<p>There's a Bloomberg Businessweek cover, on an issue discussing a long-running bull market, where the idea is so simple you almost wish you'd thought of it yourself. When you have a niche audience, in this case people interested in stocks and finance, consider the language and the terms they use, because a bull market simply means the market is in an uptrend.</p>
+<p>What's interesting is that the idea only works because the designer understands the audience. Show it to somebody with zero interest in investing and they might just see a weird bull standing in a field. But investors instantly understand the reference. That's a really important lesson, because one of the biggest mistakes designers make is trying to communicate to absolutely everyone. Great concepts often come from understanding a specific audience deeply enough to speak their language.</p>
+<p>Which is also why one of the worst things you can do right now is become visually generic. You don't need to force a fake signature style into everything you make, but you should start noticing the recurring themes in your work. What kind of aesthetics naturally interest you? For me, for a long, long time, it's been bold, minimal work with a hint of luxury or class within it. And stop chasing every design trend that appears online, because memorable designers are usually opinionated designers.</p>
+<p>The other half of knowing your audience is knowing the state they're in when they arrive. Someone scrolling a charity website is not in the same mindset as someone casually flicking through a fashion magazine. One might be a bit cautious, looking for trust, maybe slightly open emotionally. The other is relaxed, just browsing, not thinking too deeply. If your design doesn't match that emotional starting point, something is going to feel off straight away. So instead of just focusing on the message, you're tuning the design to meet the person where they already are. A marketing advert built into a fashion magazine might lean into bold visuals, strong contrast and clean, confident typography, because it's less about explaining and more about creating a feeling. Something aspirational that makes the viewer pause even for a second.</p>
+<h2>A brand that gets all of this right</h2>
+<p>There's a branding project I love by Vadim Carazan, and that is Netrunner. It's worth reverse engineering, starting with colour.</p>
+<p>The palette is mainly blue, purple and a kind of black. When considering emotion, blues and purples represent a lot of peace, calmness and trust, which makes a whole lot of sense when you read that the brand deals with healthcare, insurance and biotech. The colour palette here isn't a fluke or a random choice.</p>
+<p>Typography is a bit more complicated. It's a sans serif, an ultra sleek one at that, which evokes modernity and plays into the biotech industry, but it's also quite clean, which points to healthcare as well. The logo is set in lowercase letters. The designer could easily have used uppercase, but lowercase is more informal and more soft, which helps evoke trust. Great for the insurance sector. Notice too how the clean curves on the typeface mimic the style of the logo.</p>
+<p>The logo itself is slanted, almost italic, and split up, which according to the designer evokes a sense of speed and movement. That plays into the modern approach of the whole identity. The layout is clean and minimal, reinforcing everything else, and the imagery plays right into those modern, cutting-edge sectors.</p>
+<p>So no, it's not a fluke that this branding project is a success and works well. The designer has used the theory of emotion to make design choices, and has excelled in the role of brand visionary.</p>
+</main>
+<footer>
+<p>Prepared by Umar &middot; Proof Sheet &middot; <a href="mailto:umar@proofsheetstudio.com"
+   style="color:var(--accent)">umar@proofsheetstudio.com</a></p>
+<p>Every word here comes from your own video. Nothing was invented, and nothing has been
+published anywhere.</p>
+</footer>
+<script type="text/plain" id="md">Title: Stop Asking If Your Design Looks Good
+Source video folder: samples/thomas-cargill
+Drafted 2026-08-01
+
+Every time you look at a design, maybe even your own design, stop asking yourself if it looks good. It&#x27;s the easiest question in the world to ask, and it does nothing for you.
+
+Instead, ask yourself three things. What is this trying to make me feel? What is it trying to make me do? And what decisions have been made to get me there? If you can answer those quickly, without overthinking it, your design eye is for sure improving, because that&#x27;s really what training your eye is all about. Recognising intention first. Seeing why something works, or more importantly perhaps, why it doesn&#x27;t.
+
+## What that looks like on a real design
+
+Here&#x27;s what I mean. I broke down a design for a Mediterranean villa brand, and at first glance it just looks clean. Maybe calm, minimal, quite nice actually. But once you slow down and start looking at the human decisions, you realise this isn&#x27;t random at all.
+
+Take the image first. The boat is placed almost centrally, which gives it stability and makes it a focal point. But it&#x27;s not static. It&#x27;s moving away from us slightly towards the upper left. That direction matters more than people realise, because it creates a sense of progression, of leaving, which ties directly into the idea of silence and escape the brand is hinting at. If the boat was coming towards us, or just sitting still, the entire feeling changes completely.
+
+Then the lighting. It&#x27;s not harsh, not overly dramatic either. It&#x27;s soft, golden, kind of nostalgic, and it&#x27;s doing a lot of emotional work without saying anything at all. It leans into that idealised Mediterranean feeling, the warmth, the calmness, the stillness. It&#x27;s not just a nice photo. It&#x27;s a very specific atmosphere being chosen and pushed onto you as the viewer.
+
+The typography is restrained. Nothing shouts at you. The script layered over the serif adds a human touch, kind of like a signature breaking the rules, and the spacing across the words &quot;light, silence and sea&quot; is so deliberate it could only have come from a designer&#x27;s brain.
+
+Step back and this isn&#x27;t just a nice layout. It&#x27;s a collection of small, very intentional decisions that all point in the same direction. That&#x27;s exactly what design thinking looks like in practice. It&#x27;s also the part AI struggles with right now, because it&#x27;s about choosing what should feel right, and why. AI can design parts of this, for sure, but only if a designer with knowledge is controlling it in the first place.
+
+## Design to get a result, not a compliment
+
+Here&#x27;s something that takes most designers a long time to unlearn: designing to impress.
+
+Beginners usually design for approval alone. They try to impress their client with skill or a Photoshop effect. They want the client or the boss to say wow, and they chase aesthetic praise like &quot;that looks amazing&quot; or &quot;I love the colour choice here&quot;. The truth is, none of that means a design is actually working.
+
+Experts don&#x27;t make being admired the priority. They design to get a result. The focus shifts from pleasing people to guiding actions. Do the majority of users click here? Did they read this? Did they buy? Did they remember? That&#x27;s the shift that really, really matters. If a client says &quot;yeah, this looks okay&quot; but the campaign gets 40% more conversions, that&#x27;s a win, because as a designer your job is to make things actually happen.
+
+Before you even open your software, ask what success actually looks like. More sign-ups? More product sales? Higher time spent on a landing page? Define that goal first, then design backwards from it.
+
+You might say, well, my client doesn&#x27;t actually care about that, they just want things to look a certain way. Okay. That client is likely low tier in the business world, and they likely pay you very little for your time. Part of the designer&#x27;s role in the real world is to demonstrate and persuade a client why your design choices work, and how they benefit them.
+
+## Speak to somebody, not everybody
+
+There&#x27;s a Bloomberg Businessweek cover, on an issue discussing a long-running bull market, where the idea is so simple you almost wish you&#x27;d thought of it yourself. When you have a niche audience, in this case people interested in stocks and finance, consider the language and the terms they use, because a bull market simply means the market is in an uptrend.
+
+What&#x27;s interesting is that the idea only works because the designer understands the audience. Show it to somebody with zero interest in investing and they might just see a weird bull standing in a field. But investors instantly understand the reference. That&#x27;s a really important lesson, because one of the biggest mistakes designers make is trying to communicate to absolutely everyone. Great concepts often come from understanding a specific audience deeply enough to speak their language.
+
+Which is also why one of the worst things you can do right now is become visually generic. You don&#x27;t need to force a fake signature style into everything you make, but you should start noticing the recurring themes in your work. What kind of aesthetics naturally interest you? For me, for a long, long time, it&#x27;s been bold, minimal work with a hint of luxury or class within it. And stop chasing every design trend that appears online, because memorable designers are usually opinionated designers.
+
+The other half of knowing your audience is knowing the state they&#x27;re in when they arrive. Someone scrolling a charity website is not in the same mindset as someone casually flicking through a fashion magazine. One might be a bit cautious, looking for trust, maybe slightly open emotionally. The other is relaxed, just browsing, not thinking too deeply. If your design doesn&#x27;t match that emotional starting point, something is going to feel off straight away. So instead of just focusing on the message, you&#x27;re tuning the design to meet the person where they already are. A marketing advert built into a fashion magazine might lean into bold visuals, strong contrast and clean, confident typography, because it&#x27;s less about explaining and more about creating a feeling. Something aspirational that makes the viewer pause even for a second.
+
+## A brand that gets all of this right
+
+There&#x27;s a branding project I love by Vadim Carazan, and that is Netrunner. It&#x27;s worth reverse engineering, starting with colour.
+
+The palette is mainly blue, purple and a kind of black. When considering emotion, blues and purples represent a lot of peace, calmness and trust, which makes a whole lot of sense when you read that the brand deals with healthcare, insurance and biotech. The colour palette here isn&#x27;t a fluke or a random choice.
+
+Typography is a bit more complicated. It&#x27;s a sans serif, an ultra sleek one at that, which evokes modernity and plays into the biotech industry, but it&#x27;s also quite clean, which points to healthcare as well. The logo is set in lowercase letters. The designer could easily have used uppercase, but lowercase is more informal and more soft, which helps evoke trust. Great for the insurance sector. Notice too how the clean curves on the typeface mimic the style of the logo.
+
+The logo itself is slanted, almost italic, and split up, which according to the designer evokes a sense of speed and movement. That plays into the modern approach of the whole identity. The layout is clean and minimal, reinforcing everything else, and the imagery plays right into those modern, cutting-edge sectors.
+
+So no, it&#x27;s not a fluke that this branding project is a success and works well. The designer has used the theory of emotion to make design choices, and has excelled in the role of brand visionary.
+</script>
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var src = document.getElementById(b.getAttribute('data-copy')).textContent;
+    navigator.clipboard.writeText(src).then(function(){
+      var t = b.textContent; b.textContent = 'Copied';
+      setTimeout(function(){ b.textContent = t; }, 1600);
+    });
+  });
+});
+</script>
+</body>
+</html>
