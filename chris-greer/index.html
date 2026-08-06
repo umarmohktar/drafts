@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Capturing and Decrypting DNS over HTTPS with Wireshark — draft for Chris Greer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#fbfbfa; --surface:#fff; --ink:#1a1a18; --muted:#6b6b66; --line:#e4e4e0;
+  --accent:#8a5a2b; --accent-soft:#f5efe7;
+  --measure:34rem;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;--line:#2c2c29;
+        --accent:#d9a66b;--accent-soft:#241d14}
+}
+:root[data-theme="dark"]{--bg:#131312;--surface:#1b1b19;--ink:#eceae6;--muted:#9a9a93;
+        --line:#2c2c29;--accent:#d9a66b;--accent-soft:#241d14}
+:root[data-theme="light"]{--bg:#fbfbfa;--surface:#fff;--ink:#1a1a18;--muted:#6b6b66;
+        --line:#e4e4e0;--accent:#8a5a2b;--accent-soft:#f5efe7}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 1.0625rem/1.7 ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+  padding:0 1.25rem 5rem}
+.wrap{max-width:var(--measure);margin:0 auto}
+.banner{max-width:var(--measure);margin:0 auto;background:var(--accent-soft);
+  border:1px solid var(--line);border-radius:10px;padding:.85rem 1rem;
+  margin-top:2rem;font:600 .8125rem/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.005em;color:var(--ink)}
+.banner span{display:block;font-weight:400;color:var(--muted);margin-top:.25rem}
+h1{font-size:clamp(1.85rem,1.3rem + 2.2vw,2.6rem);line-height:1.16;letter-spacing:-.021em;
+  margin:2.25rem 0 .6rem;font-weight:600}
+h2{font-size:1.3rem;line-height:1.3;letter-spacing:-.012em;margin:2.6rem 0 .7rem;font-weight:600}
+p{margin:0 0 1.35rem}
+.meta{font:400 .8125rem/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--muted);margin:0 0 2rem;padding-bottom:1.4rem;border-bottom:1px solid var(--line)}
+.meta b{font-weight:600;color:var(--ink)}
+code{font:400 .9em/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:var(--accent-soft);border:1px solid var(--line);border-radius:4px;padding:.1em .34em}
+footer{max-width:var(--measure);margin:3.5rem auto 0;padding-top:1.5rem;
+  border-top:1px solid var(--line);
+  font:400 .8125rem/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--muted)}
+.tools{display:flex;gap:.6rem;flex-wrap:wrap;margin:0 0 1.25rem}
+button{font:600 .8125rem/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:.6rem .85rem;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="banner">Unpublished draft prepared for Chris Greer
+<span>Not published anywhere and not indexed. Written from your own video, in your own words —
+yours to edit, publish or bin. No credit and no payment needed.</span></div>
+<main class="wrap">
+<h1>Capturing and Decrypting DNS over HTTPS with Wireshark</h1>
+<p class="meta">Drafted from your video &middot; ~1,013 words &middot; drafted 2026-08-01</p>
+<div class="tools">
+  <button data-copy="md">Copy as Markdown</button>
+</div>
+<p>For most of its life, DNS has been wide open on the wire. Every lookup you make is readable in clear text by anything sitting between you and your resolver. That's finally changing. So in this walkthrough I want to capture DNS over HTTPS, decrypt it, and show you exactly what it looks like behind that green lock.</p>
+<p>First, let's get our bearings, because DNSSEC and DNS encryption get confused all the time. DNSSEC validates the records that come back to your resolver. It protects the integrity of the cache, and it travels in clear text. Encryption covers a different piece of the picture: the last mile between your client and your resolver. There are a couple of ways to handle that. One is DNS over TLS. The other is DNS over HTTPS, and that's the one we're going to capture. So let's get to it.</p>
+<h2>Setting up the capture</h2>
+<p>I'm doing this on my MacBook Pro. The first problem to solve is keys: if I capture encrypted traffic without the TLS session keys, all I have is ciphertext. So before launching anything, I export the SSLKEYLOGFILE environment variable and point it at a file. I have a folder called keys, and I'm saving to sslkeys.log. That tells Firefox to store every new TLS key it generates to that log. The keys and the capture have to come from the same session, so both need to be running together.</p>
+<p>From that same terminal, I launch Firefox with open -a so it picks up the variable. Then I open Wireshark and start my capture.</p>
+<p>Now for the setting that matters. In Firefox, go to Settings and search for DNS. On this copy of Firefox, DNS over HTTPS is set to Max Protection, which means all of my DNS goes out over TCP port 443. None of it will be UDP DNS like I'm used to seeing.</p>
+<p>I want both behaviors in one trace, so I do this in two passes. First I turn DNS over HTTPS off and browse to packetpioneer.com. That gives me good old clear-text DNS. Then I flip the setting back to Max Protection and open wireshark.org in a new tab. That second lookup should have gone out as DNS over HTTPS.</p>
+<h2>What you can see without decrypting anything</h2>
+<p>Open the pcap and filter for dns, and the first visit is right there in the open. I query for packetpioneer.com, asking for an A record and an HTTPS record. The response comes back, and I head out to the website, opening up a few TCP connections along the way. Pretty standard procedure: DNS over UDP, in clear text.</p>
+<p>Then comes a jump in time. At packet 120, an interesting connection kicks off. My client starts a TCP session with 162.159.61.4 and fires up a TLS handshake, and the server name in that handshake is mozilla.cloudflare-dns.com. Mozilla made an arrangement with Cloudflare to be Firefox's DNS over HTTPS provider, so the browser already knows about this endpoint. I didn't have to configure anything.</p>
+<p>On the surface this is just regular HTTPS. But something catches my eye as an analyst: even encrypted, the traffic pattern still talks. Look at the frame lengths. There are a lot of small packets going out to that server, 255, 256, 257. Follow the same conversation back the other way and the responses are a bunch of 565s, interlaced with 123s. No large packets anywhere.</p>
+<p>Now check the TCP conversation itself. Both sides advertise an MSS of 1460, so this connection can handle significantly larger packets. It just isn't using them. For a real web conversation, that's unusual. Usually some packets grow as they carry a larger payload. What I have instead is a stream of small, transactional packets, which is exactly what a pile of DNS queries and responses would look like. So before decrypting a single byte, I'm already fairly confident this is DNS over HTTPS.</p>
+<p>But let's validate that.</p>
+<h2>Decrypting the capture</h2>
+<p>In Wireshark, head to Preferences. That's Wireshark &gt; Preferences on a Mac, or Edit &gt; Preferences on Windows and Linux. Go to Protocols and come down to TLS (hitting the T key gets you close). In the key log file field, browse to that sslkeys.log from earlier and hit OK.</p>
+<p>That's it. All of the formerly encrypted data is now decrypted.</p>
+<p>Packet 120 now tells the whole story. After the TLS handshake, Firefox sets up a series of HTTP/2 streams and multiplexes DNS queries across them in parallel. All those small packets I flagged earlier? GET after GET, each one a DNS query. And scrolling through, there are a lot of busy DNS calls in here: Live Science, Real Simple, sites I never typed into anything. That's built-in browser chatter, all of it happening under the hood of a single tab.</p>
+<p>Further down is the one I came for. Packet 346 is the A record that came back for wireshark.org. Expand it out — TCP, then TLS, then HTTP/2, stream ID 113 — and sitting on top of the whole stack is DNS. Boilerplate DNS. The query, the answers, three resource records carrying the addresses for wireshark.org. Nothing about the message itself is different from any clear-text lookup I've ever walked you through. It's just piggybacking on a secure channel. Once that response lands, the browser kicks off its connection to wireshark.org and we're off to the races.</p>
+<h2>The last mile is going dark</h2>
+<p>It's interesting: Firefox does all of this natively. The Cloudflare endpoint was pre-arranged, the Max Protection setting was sitting right there, and honestly, the other browsers are soon to follow suit. So don't be surprised when you look at a trace and see more HTTPS where your DNS used to be, and your familiar DNS over UDP starting to disappear. Over the coming years we'll see this more and more as DNS gets secured on that last mile between the client and the resolver. The lookups aren't going away. They're just moving behind the green lock, and now you know how to follow them there.</p>
+</main>
+<footer>
+<p>Prepared by Umar &middot; Proof Sheet &middot; <a href="mailto:umar@proofsheetstudio.com"
+   style="color:var(--accent)">umar@proofsheetstudio.com</a></p>
+<p>Every word here comes from your own video. Nothing was invented, and nothing has been
+published anywhere.</p>
+</footer>
+<script type="text/plain" id="md">Title: Capturing and Decrypting DNS over HTTPS with Wireshark
+Source video folder: samples/chris-greer
+Drafted: 2026-08-01
+
+For most of its life, DNS has been wide open on the wire. Every lookup you make is readable in clear text by anything sitting between you and your resolver. That&#x27;s finally changing. So in this walkthrough I want to capture DNS over HTTPS, decrypt it, and show you exactly what it looks like behind that green lock.
+
+First, let&#x27;s get our bearings, because DNSSEC and DNS encryption get confused all the time. DNSSEC validates the records that come back to your resolver. It protects the integrity of the cache, and it travels in clear text. Encryption covers a different piece of the picture: the last mile between your client and your resolver. There are a couple of ways to handle that. One is DNS over TLS. The other is DNS over HTTPS, and that&#x27;s the one we&#x27;re going to capture. So let&#x27;s get to it.
+
+## Setting up the capture
+
+I&#x27;m doing this on my MacBook Pro. The first problem to solve is keys: if I capture encrypted traffic without the TLS session keys, all I have is ciphertext. So before launching anything, I export the SSLKEYLOGFILE environment variable and point it at a file. I have a folder called keys, and I&#x27;m saving to sslkeys.log. That tells Firefox to store every new TLS key it generates to that log. The keys and the capture have to come from the same session, so both need to be running together.
+
+From that same terminal, I launch Firefox with open -a so it picks up the variable. Then I open Wireshark and start my capture.
+
+Now for the setting that matters. In Firefox, go to Settings and search for DNS. On this copy of Firefox, DNS over HTTPS is set to Max Protection, which means all of my DNS goes out over TCP port 443. None of it will be UDP DNS like I&#x27;m used to seeing.
+
+I want both behaviors in one trace, so I do this in two passes. First I turn DNS over HTTPS off and browse to packetpioneer.com. That gives me good old clear-text DNS. Then I flip the setting back to Max Protection and open wireshark.org in a new tab. That second lookup should have gone out as DNS over HTTPS.
+
+## What you can see without decrypting anything
+
+Open the pcap and filter for dns, and the first visit is right there in the open. I query for packetpioneer.com, asking for an A record and an HTTPS record. The response comes back, and I head out to the website, opening up a few TCP connections along the way. Pretty standard procedure: DNS over UDP, in clear text.
+
+Then comes a jump in time. At packet 120, an interesting connection kicks off. My client starts a TCP session with 162.159.61.4 and fires up a TLS handshake, and the server name in that handshake is mozilla.cloudflare-dns.com. Mozilla made an arrangement with Cloudflare to be Firefox&#x27;s DNS over HTTPS provider, so the browser already knows about this endpoint. I didn&#x27;t have to configure anything.
+
+On the surface this is just regular HTTPS. But something catches my eye as an analyst: even encrypted, the traffic pattern still talks. Look at the frame lengths. There are a lot of small packets going out to that server, 255, 256, 257. Follow the same conversation back the other way and the responses are a bunch of 565s, interlaced with 123s. No large packets anywhere.
+
+Now check the TCP conversation itself. Both sides advertise an MSS of 1460, so this connection can handle significantly larger packets. It just isn&#x27;t using them. For a real web conversation, that&#x27;s unusual. Usually some packets grow as they carry a larger payload. What I have instead is a stream of small, transactional packets, which is exactly what a pile of DNS queries and responses would look like. So before decrypting a single byte, I&#x27;m already fairly confident this is DNS over HTTPS.
+
+But let&#x27;s validate that.
+
+## Decrypting the capture
+
+In Wireshark, head to Preferences. That&#x27;s Wireshark &gt; Preferences on a Mac, or Edit &gt; Preferences on Windows and Linux. Go to Protocols and come down to TLS (hitting the T key gets you close). In the key log file field, browse to that sslkeys.log from earlier and hit OK.
+
+That&#x27;s it. All of the formerly encrypted data is now decrypted.
+
+Packet 120 now tells the whole story. After the TLS handshake, Firefox sets up a series of HTTP/2 streams and multiplexes DNS queries across them in parallel. All those small packets I flagged earlier? GET after GET, each one a DNS query. And scrolling through, there are a lot of busy DNS calls in here: Live Science, Real Simple, sites I never typed into anything. That&#x27;s built-in browser chatter, all of it happening under the hood of a single tab.
+
+Further down is the one I came for. Packet 346 is the A record that came back for wireshark.org. Expand it out — TCP, then TLS, then HTTP/2, stream ID 113 — and sitting on top of the whole stack is DNS. Boilerplate DNS. The query, the answers, three resource records carrying the addresses for wireshark.org. Nothing about the message itself is different from any clear-text lookup I&#x27;ve ever walked you through. It&#x27;s just piggybacking on a secure channel. Once that response lands, the browser kicks off its connection to wireshark.org and we&#x27;re off to the races.
+
+## The last mile is going dark
+
+It&#x27;s interesting: Firefox does all of this natively. The Cloudflare endpoint was pre-arranged, the Max Protection setting was sitting right there, and honestly, the other browsers are soon to follow suit. So don&#x27;t be surprised when you look at a trace and see more HTTPS where your DNS used to be, and your familiar DNS over UDP starting to disappear. Over the coming years we&#x27;ll see this more and more as DNS gets secured on that last mile between the client and the resolver. The lookups aren&#x27;t going away. They&#x27;re just moving behind the green lock, and now you know how to follow them there.
+</script>
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var src = document.getElementById(b.getAttribute('data-copy')).textContent;
+    navigator.clipboard.writeText(src).then(function(){
+      var t = b.textContent; b.textContent = 'Copied';
+      setTimeout(function(){ b.textContent = t; }, 1600);
+    });
+  });
+});
+</script>
+</body>
+</html>
